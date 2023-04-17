@@ -12,10 +12,10 @@ export const useAuthStore = defineStore('auth', {
     setAuthToken(authToken: string) {
       this.authToken = authToken
     },
-    getAuthToken() {
+    getAuthToken(): string | null {
       return this.authToken
     },
-    isAuthenticated() {
+    isAuthenticated(): boolean {
       return !!this.authToken
     }
   }

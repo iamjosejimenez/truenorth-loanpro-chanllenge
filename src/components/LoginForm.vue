@@ -2,24 +2,37 @@
 import { loginRequest } from '../api'
 import { useAuthStore } from '../stores/auth'
 
-const authStore = useAuthStore()
 export default {
   data() {
     return {
       email: '',
       password: '',
-      errorMessages: []
+      errorMessages: [],
+      token: ''
     }
   },
   methods: {
     async submitData() {
       try {
         const { token } = await loginRequest(this.email, this.password)
-        authStore.setAuthToken(token)
+        this.token = token
       } catch (error: any) {
         const { non_field_errors } = error.response.data
         this.errorMessages = non_field_errors
       }
+    }
+  },
+  mounted() {
+    if (localStorage.token) {
+      this.token = localStorage.token
+    }
+  },
+  watch: {
+    token(newToken) {
+      localStorage.token = newToken
+      // const authStore = useAuthStore()
+      // authStore.setAuthToken(newToken)
+      this.$router.push('/calculator')
     }
   }
 }
