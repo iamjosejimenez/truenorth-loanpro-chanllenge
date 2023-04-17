@@ -51,3 +51,12 @@ export const operationRequest = async (
 
   return data
 }
+
+export const getCurrentBalanceRequest = async (token: string): Promise<IOperationResponse> => {
+  const { data }: AxiosResponse<IOperationResponse> = await axios.get(
+    `${API_BASE_URL}/users/balance/`,
+    { headers: { Authorization: `Token ${token}` } }
+  )
+
+  return data
+}

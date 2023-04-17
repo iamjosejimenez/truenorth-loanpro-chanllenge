@@ -2,7 +2,7 @@
 import CalculatorDigit from '@/components/CalculatorDigit.vue'
 import CalculatorOperator from '@/components/CalculatorOperator.vue'
 import { OperationEnum } from '@/types'
-import { operationRequest } from '@/api'
+import { operationRequest, getCurrentBalanceRequest } from '@/api'
 
 interface IData {
   displayValue: string
@@ -36,7 +36,14 @@ export default {
       }
     }
   },
+  async mounted() {
+    await this.getInitialData()
+  },
   methods: {
+    async getInitialData() {
+      const { user_balance: userBalance } = await getCurrentBalanceRequest(localStorage.token || '')
+      this.userBalance = userBalance
+    },
     onClickNumber(value: string) {
       if (this.userWriting) {
         if (this.displayValue == '0') {
