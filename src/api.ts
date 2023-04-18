@@ -64,15 +64,16 @@ export const operationRequest = async (
   return data
 }
 
-export const getCurrentBalanceRequest = async (token: string): Promise<IUserBalance> => {
-  const { data }: AxiosResponse<IUserBalance> = await axiosInstance.get(
-    `${API_BASE_URL}/users/balance/`,
+export const getCurrentBalanceRequest = async (token: string): Promise<IUserBalance | null> => {
+  const { data }: AxiosResponse<IPagination<IUserBalance>> = await axiosInstance.get(
+    `${API_BASE_URL}/users/balances/?page=1&page_size=1`,
     {
       headers: { Authorization: `Token ${token}` }
     }
   )
 
-  return data
+  const results = data.results
+  return results.length ? results[0] : null
 }
 
 export const getUserRecords = async (

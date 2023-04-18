@@ -10,7 +10,7 @@ interface IData {
   currentOperator: OperationEnum | null
   operators: object[]
   userWriting: boolean
-  userBalance: number
+  userBalance: string
   operator2NumOperands: Record<OperationEnum, number>
   errors: string[]
 }
@@ -18,7 +18,7 @@ interface IData {
 export default {
   data(): IData {
     return {
-      userBalance: 0,
+      userBalance: 'loading...',
       displayValue: '0',
       previousResult: '',
       currentOperator: null,
@@ -43,8 +43,14 @@ export default {
   },
   methods: {
     async getInitialData() {
-      const { user_balance: userBalance } = await getCurrentBalanceRequest(localStorage.token || '')
-      this.userBalance = userBalance
+      const userBalanceObject = await getCurrentBalanceRequest(localStorage.token || '')
+      const userBalance = userBalanceObject?.user_balance
+
+      if (!userBalance) {
+        this.userBalance = 'Make your first operation!'
+        return
+      }
+      this.userBalance = `${userBalance}`
     },
     onClickNumber(value: string) {
       if (this.userWriting) {
