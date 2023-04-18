@@ -10,13 +10,22 @@ import {
 import axios, { type AxiosResponse } from 'axios'
 import { stringify } from 'qs'
 
-const API_BASE_URL = import.meta.env.VITE_BASE_API_URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+const API_KEY = import.meta.env.VITE_API_KEY
+
+const axiosInstance = axios.create({
+  url: API_BASE_URL,
+  headers: {
+    'x-api-key': API_KEY
+  }
+})
+
 export const loginRequest = async (email: string, password: string): Promise<ILoginResponse> => {
   const body: ILoginBody = {
     email: email,
     password: password
   }
-  const { data }: AxiosResponse<ILoginResponse> = await axios.post(
+  const { data }: AxiosResponse<ILoginResponse> = await axiosInstance.post(
     `${API_BASE_URL}/users/token/`,
     stringify(body),
     {
@@ -46,7 +55,7 @@ export const operationRequest = async (
     operation_type: operator2OperationType[operator],
     operation_input: values
   }
-  const { data }: AxiosResponse<IRecordResponse> = await axios.post(
+  const { data }: AxiosResponse<IRecordResponse> = await axiosInstance.post(
     `${API_BASE_URL}/records/`,
     body,
     { headers: { Authorization: `Token ${token}` } }
@@ -56,9 +65,12 @@ export const operationRequest = async (
 }
 
 export const getCurrentBalanceRequest = async (token: string): Promise<IUserBalance> => {
-  const { data }: AxiosResponse<IUserBalance> = await axios.get(`${API_BASE_URL}/users/balance/`, {
-    headers: { Authorization: `Token ${token}` }
-  })
+  const { data }: AxiosResponse<IUserBalance> = await axiosInstance.get(
+    `${API_BASE_URL}/users/balance/`,
+    {
+      headers: { Authorization: `Token ${token}` }
+    }
+  )
 
   return data
 }
@@ -90,7 +102,7 @@ export const getUserRecords = async (
     queryParams += `&ordering=${ordering.join(',')}`
   }
 
-  const { data }: AxiosResponse<IPagination<IRecordResponse>> = await axios.get(
+  const { data }: AxiosResponse<IPagination<IRecordResponse>> = await axiosInstance.get(
     `${API_BASE_URL}/records/?${queryParams}`,
     {
       headers: { Authorization: `Token ${token}` }
@@ -101,7 +113,7 @@ export const getUserRecords = async (
 }
 
 export const deleteRecordRequest = async (token: string, id: number): Promise<void> => {
-  return await axios.delete(`${API_BASE_URL}/records/${id}/`, {
+  return await axiosInstance.delete(`${API_BASE_URL}/records/${id}/`, {
     headers: { Authorization: `Token ${token}` }
   })
 }

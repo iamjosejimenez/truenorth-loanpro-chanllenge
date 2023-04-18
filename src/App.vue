@@ -1,7 +1,16 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import { useAuthStore } from './stores/auth'
-const isAuthenticated = useAuthStore().isAuthenticated()
+import { storeToRefs } from 'pinia'
+import router from './router'
+
+const authStore = useAuthStore()
+const { authToken } = storeToRefs(authStore)
+
+const logout = () => {
+  authStore.cleanToken()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -20,8 +29,14 @@ const isAuthenticated = useAuthStore().isAuthenticated()
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarToggler">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
+        <ul v-if="authToken" class="navbar-nav ms-auto">
+          <li @click="router.push('/calculator')" class="nav-item">
+            <a class="nav-link" href="">Calculator</a>
+          </li>
+          <li @click="router.push('/records')" class="nav-item">
+            <a class="nav-link" href="">Records</a>
+          </li>
+          <li @click="logout" class="nav-item">
             <a class="nav-link" href="">Logout</a>
           </li>
         </ul>

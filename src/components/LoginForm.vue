@@ -20,17 +20,23 @@ export default {
         const { non_field_errors } = error.response.data
         this.errorMessages = non_field_errors
       }
+    },
+    setGlobalToken(token: string) {
+      const authStore = useAuthStore()
+      authStore.setAuthToken(token)
+      this.$router.push('/calculator')
     }
   },
   mounted() {
-    if (localStorage.token) {
-      this.token = localStorage.token
+    const authStore = useAuthStore()
+    const tokenStored = authStore.getAuthToken()
+    if (tokenStored) {
+      this.token = tokenStored
     }
   },
   watch: {
     token(newToken) {
-      localStorage.token = newToken
-      this.$router.push('/calculator')
+      this.setGlobalToken(newToken)
     }
   }
 }
