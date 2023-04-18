@@ -127,7 +127,7 @@ export default {
   <div class="container page-container">
     <div class="calculator-container">
       <div class="w-100 alert alert-info mt-3" role="alert">
-        Balance: {{ userBalance ? `${userBalance}$` : 'Make your first operation!' }}
+        Balance: {{ userBalance ? `${userBalance.toFixed(2)}$` : 'Make your first operation!' }}
       </div>
       <div class="mt-3 calculator card">
         <input type="text" class="calculator-screen z-depth-1" v-model="displayValue" disabled />
