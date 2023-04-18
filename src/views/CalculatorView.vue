@@ -10,7 +10,7 @@ interface IData {
   currentOperator: OperationEnum | null
   operators: object[]
   userWriting: boolean
-  userBalance: string
+  userBalance: number
   operator2NumOperands: Record<OperationEnum, number>
   errors: string[]
 }
@@ -18,7 +18,7 @@ interface IData {
 export default {
   data(): IData {
     return {
-      userBalance: 'loading...',
+      userBalance: 0,
       displayValue: '0',
       previousResult: '',
       currentOperator: null,
@@ -47,10 +47,9 @@ export default {
       const userBalance = userBalanceObject?.user_balance
 
       if (!userBalance) {
-        this.userBalance = 'Make your first operation!'
         return
       }
-      this.userBalance = `${userBalance}`
+      this.userBalance = userBalance
     },
     onClickNumber(value: string) {
       if (this.userWriting) {
@@ -127,7 +126,9 @@ export default {
 <template>
   <div class="container page-container">
     <div class="calculator-container">
-      <div class="w-100 alert alert-info mt-3" role="alert">Balance: {{ userBalance }}$</div>
+      <div class="w-100 alert alert-info mt-3" role="alert">
+        Balance: {{ userBalance ? `${userBalance}$` : 'Make your first operation!' }}
+      </div>
       <div class="mt-3 calculator card">
         <input type="text" class="calculator-screen z-depth-1" v-model="displayValue" disabled />
         <div class="calculator-keys">
