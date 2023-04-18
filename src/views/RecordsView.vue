@@ -1,5 +1,5 @@
 <script lang="ts">
-import { getUserRecords } from '@/api'
+import { getUserRecords, deleteRecordRequest } from '@/api'
 import type { IRecordResponse } from '@/types'
 import { SortingDirection } from '@/types'
 
@@ -29,7 +29,8 @@ export default {
         { label: 'Response', field: 'operation_response' },
         { label: 'Date', field: 'date' },
         { label: 'User Balance', field: 'user_balance' },
-        { label: 'Amount', field: 'amount' }
+        { label: 'Amount', field: 'amount' },
+        { label: 'Delete', field: '' }
       ],
       sortConfig: {
         id: SortingDirection.NO_SORT,
@@ -103,6 +104,10 @@ export default {
 
       this.sortConfig[field] = newSortingField
       this.getData()
+    },
+    async deleteRecord(id: number) {
+      await deleteRecordRequest(localStorage.token || '', id)
+      await this.getData()
     }
   }
 }
@@ -119,6 +124,7 @@ export default {
               type="button"
               :class="sortButtonClass(column.field)"
               class="sort-button"
+              v-if="column.field"
             >
               <i class="bi bi-arrow-down-up"></i>
             </button>
@@ -126,13 +132,18 @@ export default {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="record in records">
+        <tr v-for="record in records" :key="record.id">
           <th scope="row">{{ record.id }}</th>
           <td>{{ record.operation.type }}</td>
           <td>{{ record.operation_response }}</td>
           <td>{{ new Date(record.date).toLocaleString('es-cl') }}</td>
           <td>{{ record.user_balance.toFixed(2) }}</td>
           <td>{{ record.amount }}</td>
+          <td>
+            <button @click.prevent="deleteRecord(record.id)" type="button" class="btn btn-danger">
+              <i class="bi bi-trash-fill"></i>
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>

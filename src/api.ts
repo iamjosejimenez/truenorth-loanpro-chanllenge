@@ -99,3 +99,9 @@ export const getUserRecords = async (
 
   return data
 }
+
+export const deleteRecordRequest = async (token: string, id: number): Promise<void> => {
+  return await axios.delete(`${API_BASE_URL}/records/${id}/`, {
+    headers: { Authorization: `Token ${token}` }
+  })
+}
