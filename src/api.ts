@@ -1,8 +1,11 @@
 import {
   OperationEnum,
+  SortingDirection,
   type ILoginBody,
   type ILoginResponse,
-  type IOperationResponse
+  type IRecordResponse,
+  type IUserBalance,
+  type IPagination
 } from './types'
 import axios, { type AxiosResponse } from 'axios'
 import { stringify } from 'qs'
@@ -30,7 +33,7 @@ export const operationRequest = async (
   values: string[],
   operator: OperationEnum,
   token: string
-): Promise<IOperationResponse> => {
+): Promise<IRecordResponse> => {
   const operator2OperationType = {
     [OperationEnum.SUM]: 'ADDITION',
     [OperationEnum.SUB]: 'SUBTRACTION',
@@ -43,7 +46,7 @@ export const operationRequest = async (
     operation_type: operator2OperationType[operator],
     operation_input: values
   }
-  const { data }: AxiosResponse<IOperationResponse> = await axios.post(
+  const { data }: AxiosResponse<IRecordResponse> = await axios.post(
     `${API_BASE_URL}/records/`,
     body,
     { headers: { Authorization: `Token ${token}` } }
@@ -52,10 +55,46 @@ export const operationRequest = async (
   return data
 }
 
-export const getCurrentBalanceRequest = async (token: string): Promise<IOperationResponse> => {
-  const { data }: AxiosResponse<IOperationResponse> = await axios.get(
-    `${API_BASE_URL}/users/balance/`,
-    { headers: { Authorization: `Token ${token}` } }
+export const getCurrentBalanceRequest = async (token: string): Promise<IUserBalance> => {
+  const { data }: AxiosResponse<IUserBalance> = await axios.get(`${API_BASE_URL}/users/balance/`, {
+    headers: { Authorization: `Token ${token}` }
+  })
+
+  return data
+}
+
+export const getUserRecords = async (
+  token: string,
+  page: number,
+  pageSize: number,
+  searchInput: string,
+  sortConfig: Record<string, SortingDirection>
+): Promise<IPagination<IRecordResponse>> => {
+  let queryParams = `page=${page}&page_size=${pageSize}`
+
+  if (searchInput) {
+    queryParams += `&search=${searchInput}`
+  }
+
+  const ordering = []
+  for (const [field, sortDirection] of Object.entries(sortConfig)) {
+    if (sortDirection === SortingDirection.ASC) {
+      ordering.push(field)
+    }
+    if (sortDirection === SortingDirection.DESC) {
+      ordering.push(`-${field}`)
+    }
+  }
+
+  if (ordering.length) {
+    queryParams += `&ordering=${ordering.join(',')}`
+  }
+
+  const { data }: AxiosResponse<IPagination<IRecordResponse>> = await axios.get(
+    `${API_BASE_URL}/records/?${queryParams}`,
+    {
+      headers: { Authorization: `Token ${token}` }
+    }
   )
 
   return data

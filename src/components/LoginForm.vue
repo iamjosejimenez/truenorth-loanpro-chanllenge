@@ -30,8 +30,6 @@ export default {
   watch: {
     token(newToken) {
       localStorage.token = newToken
-      // const authStore = useAuthStore()
-      // authStore.setAuthToken(newToken)
       this.$router.push('/calculator')
     }
   }
