@@ -12,6 +12,7 @@ interface IData {
   userWriting: boolean
   userBalance: number
   operator2NumOperands: Record<OperationEnum, number>
+  errors: string[]
 }
 
 export default {
@@ -33,7 +34,8 @@ export default {
         [OperationEnum.DIV]: 2,
         [OperationEnum.RS]: 0,
         [OperationEnum.SQRT]: 1
-      }
+      },
+      errors: []
     }
   },
   async mounted() {
@@ -77,16 +79,24 @@ export default {
         }
       }
 
-      const { operation_response: newDisplayValue, user_balance: newUserBalance } =
-        await operationRequest(
-          operands.reverse(),
-          this.currentOperator as OperationEnum,
-          localStorage.token || ''
-        )
+      try {
+        this.displayValue = 'loading...'
+        const { operation_response: newDisplayValue, user_balance: newUserBalance } =
+          await operationRequest(
+            operands.reverse(),
+            this.currentOperator as OperationEnum,
+            localStorage.token || ''
+          )
 
-      this.displayValue = newDisplayValue
-      this.userBalance = newUserBalance
-      this.currentOperator = operator
+        this.displayValue = newDisplayValue
+        this.userBalance = newUserBalance
+        this.currentOperator = operator
+        this.errors = []
+      } catch (error: any) {
+        this.displayValue = 'error'
+        const errors = error.response.data
+        this.errors = errors
+      }
     },
     async onClickEqual() {
       if (!this.currentOperator) {
@@ -109,55 +119,65 @@ export default {
 }
 </script>
 <template>
-  <div class="alert alert-success" role="alert">Current User Balance: {{ userBalance }}</div>
-  <div class="calculator-container">
-    <div class="calculator card">
-      <input type="text" class="calculator-screen z-depth-1" v-model="displayValue" disabled />
-      <div class="calculator-keys">
-        <div class="calculator-body">
-          <div v-for="operatorRow in operators" class="calculator-row">
-            <CalculatorOperator
-              v-for="operator in operatorRow"
-              v-bind="operator"
-              :on-click="onClickOperator"
-            />
-          </div>
-          <div class="calculator-row">
-            <CalculatorDigit digit="7" :on-click="onClickNumber" />
-            <CalculatorDigit digit="8" :on-click="onClickNumber" />
-            <CalculatorDigit digit="9" :on-click="onClickNumber" />
-          </div>
-          <div class="calculator-row">
-            <CalculatorDigit digit="4" :on-click="onClickNumber" />
-            <CalculatorDigit digit="5" :on-click="onClickNumber" />
-            <CalculatorDigit digit="6" :on-click="onClickNumber" />
-          </div>
-          <div class="calculator-row">
-            <CalculatorDigit digit="1" :on-click="onClickNumber" />
-            <CalculatorDigit digit="2" :on-click="onClickNumber" />
-            <CalculatorDigit digit="3" :on-click="onClickNumber" />
-          </div>
-          <div class="calculator-row">
-            <CalculatorDigit digit="0" :on-click="onClickNumber" />
-            <CalculatorDigit digit="AC" :on-click="clearDisplay" />
-            <CalculatorDigit digit="=" :on-click="onClickEqual" />
+  <div class="container page-container">
+    <div class="calculator-container">
+      <div class="w-100 alert alert-info mt-3" role="alert">Balance: {{ userBalance }}$</div>
+      <div class="mt-3 calculator card">
+        <input type="text" class="calculator-screen z-depth-1" v-model="displayValue" disabled />
+        <div class="calculator-keys">
+          <div class="calculator-body">
+            <div v-for="operatorRow in operators" class="calculator-row">
+              <CalculatorOperator
+                v-for="operator in operatorRow"
+                v-bind="operator"
+                :on-click="onClickOperator"
+              />
+            </div>
+            <div class="calculator-row">
+              <CalculatorDigit digit="7" :on-click="onClickNumber" />
+              <CalculatorDigit digit="8" :on-click="onClickNumber" />
+              <CalculatorDigit digit="9" :on-click="onClickNumber" />
+            </div>
+            <div class="calculator-row">
+              <CalculatorDigit digit="4" :on-click="onClickNumber" />
+              <CalculatorDigit digit="5" :on-click="onClickNumber" />
+              <CalculatorDigit digit="6" :on-click="onClickNumber" />
+            </div>
+            <div class="calculator-row">
+              <CalculatorDigit digit="1" :on-click="onClickNumber" />
+              <CalculatorDigit digit="2" :on-click="onClickNumber" />
+              <CalculatorDigit digit="3" :on-click="onClickNumber" />
+            </div>
+            <div class="calculator-row">
+              <CalculatorDigit digit="0" :on-click="onClickNumber" />
+              <CalculatorDigit digit="AC" :on-click="clearDisplay" />
+              <CalculatorDigit digit="=" :on-click="onClickEqual" />
+            </div>
           </div>
         </div>
+      </div>
+      <div v-for="error in errors" class="w-100 alert alert-danger mt-3" role="alert">
+        {{ error }}
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.calculator-container {
+.page-container {
   display: flex;
   justify-content: center;
 }
+.calculator-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 .calculator {
-  margin-top: 40px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 300px;
+  width: 400px;
 }
 
 .calculator-screen {
