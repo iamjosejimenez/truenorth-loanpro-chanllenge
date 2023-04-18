@@ -4,8 +4,8 @@ This template should help get you started developing with Vue 3 in Vite.
 
 To begin using this project, follow these steps:
 
-1. simply rename _.env.example_ to _.env_.
-2. go to [backend repo](https://github.com/iamjosejimenez/truenorth-loanpro-be) to run the backend.
+1. Rename _.env.example_ to _.env_.
+2. Go to [backend repo](https://github.com/iamjosejimenez/truenorth-loanpro-be) to run the backend.
 3. Run:
 
    $ npm run dev
