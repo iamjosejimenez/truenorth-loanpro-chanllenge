@@ -7,13 +7,13 @@ import { useAuthStore } from '@/stores/auth'
 
 interface IData {
   displayValue: string
-  previousResult: string
   currentOperator: OperationEnum | null
   operators: object[]
   userWriting: boolean
   userBalance: number
   operator2NumOperands: Record<OperationEnum, number>
   errors: string[]
+  operands: string[]
 }
 
 export default {
@@ -21,7 +21,7 @@ export default {
     return {
       userBalance: 0,
       displayValue: '0',
-      previousResult: '',
+      operands: [],
       currentOperator: null,
       userWriting: true,
       operators: [
@@ -63,41 +63,57 @@ export default {
         this.displayValue += value
       } else {
         this.userWriting = true
-        this.previousResult = this.displayValue
         this.displayValue = value
       }
     },
+    checkValidOperation(): boolean {
+      return (
+        !!this.currentOperator &&
+        this.operands.length === this.operator2NumOperands[this.currentOperator]
+      )
+    },
     async onClickOperator(operator: OperationEnum) {
+      if (operator === OperationEnum.RS) {
+        this.operands = []
+        this.currentOperator = operator
+        return this.executeOperation()
+      }
+
+      if (!this.userWriting) {
+        this.currentOperator = operator
+      } else {
+        this.operands.push(this.displayValue)
+      }
       this.userWriting = false
 
+      let appliedOperator = false
       if (!this.currentOperator) {
         this.currentOperator = operator
+        appliedOperator = true
       }
-
-      const operands: string[] = []
-      if (operands.length < this.operator2NumOperands[operator]) {
-        operands.push(this.displayValue)
-
-        if (this.previousResult) {
-          operands.push(this.previousResult)
+      if (this.checkValidOperation()) {
+        await this.executeOperation()
+        this.operands = [this.displayValue]
+        if (!appliedOperator) {
+          this.currentOperator = operator
         }
-
-        if (operands.length < this.operator2NumOperands[operator]) {
-          return
-        }
+      } else {
+        this.currentOperator = operator
       }
-
+    },
+    async executeOperation(): Promise<void> {
+      if (!this.checkValidOperation()) return
       try {
         const authStore = useAuthStore()
         const token = authStore.getAuthToken()
         this.displayValue = 'loading...'
         const { operation_response: newDisplayValue, user_balance: newUserBalance } =
-          await operationRequest(operands.reverse(), this.currentOperator as OperationEnum, token)
+          await operationRequest(this.operands, this.currentOperator as OperationEnum, token)
 
         this.displayValue = newDisplayValue
         this.userBalance = newUserBalance
-        this.currentOperator = operator
         this.errors = []
+        this.currentOperator = null
       } catch (error: any) {
         this.displayValue = 'error'
         const errors = error.response.data
@@ -105,19 +121,17 @@ export default {
       }
     },
     async onClickEqual() {
-      if (!this.currentOperator) {
-        return
-      }
-
-      await this.onClickOperator(this.currentOperator)
-      this.currentOperator = null
-      this.previousResult = ''
+      if (!this.userWriting) return
+      this.userWriting = false
+      this.operands.push(this.displayValue)
+      await this.executeOperation()
+      this.operands = [this.displayValue]
     },
     clearDisplay() {
       this.displayValue = '0'
-      this.previousResult = ''
       this.currentOperator = null
       this.userWriting = true
+      this.operands = []
     }
   },
 
