@@ -17,8 +17,8 @@ export const useAuthStore = defineStore('auth', {
       localStorage.removeItem('token')
       this.authToken = null
     },
-    getAuthToken(): string | null {
-      return this.authToken
+    getAuthToken(): string {
+      return this.authToken || ''
     },
     isAuthenticated(): boolean {
       return !!this.authToken

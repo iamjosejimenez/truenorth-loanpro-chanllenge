@@ -1,5 +1,6 @@
 <script lang="ts">
 import { getUserRecords, deleteRecordRequest } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 import type { IRecordResponse } from '@/types'
 import { SortingDirection } from '@/types'
 
@@ -64,9 +65,11 @@ export default {
     },
     async getData() {
       try {
+        const authStore = useAuthStore()
+        const token = authStore.getAuthToken()
         this.error = ''
         const { results: records, next } = await getUserRecords(
-          localStorage.token || '',
+          token,
           this.page,
           this.pageSize,
           this.searchInput,
@@ -106,7 +109,9 @@ export default {
       this.getData()
     },
     async deleteRecord(id: number) {
-      await deleteRecordRequest(localStorage.token || '', id)
+      const authStore = useAuthStore()
+      const token = authStore.getAuthToken()
+      await deleteRecordRequest(token, id)
       await this.getData()
     }
   }
