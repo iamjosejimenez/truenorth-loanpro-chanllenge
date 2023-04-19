@@ -3,6 +3,7 @@ import CalculatorDigit from '@/components/CalculatorDigit.vue'
 import CalculatorOperator from '@/components/CalculatorOperator.vue'
 import { OperationEnum } from '@/types'
 import { operationRequest, getCurrentBalanceRequest } from '@/api'
+import { useAuthStore } from '@/stores/auth'
 
 interface IData {
   displayValue: string
@@ -43,7 +44,9 @@ export default {
   },
   methods: {
     async getInitialData() {
-      const userBalanceObject = await getCurrentBalanceRequest(localStorage.token || '')
+      const authStore = useAuthStore()
+      const token = authStore.getAuthToken()
+      const userBalanceObject = await getCurrentBalanceRequest(token)
       const userBalance = userBalanceObject?.user_balance
 
       if (!userBalance) {
@@ -85,13 +88,11 @@ export default {
       }
 
       try {
+        const authStore = useAuthStore()
+        const token = authStore.getAuthToken()
         this.displayValue = 'loading...'
         const { operation_response: newDisplayValue, user_balance: newUserBalance } =
-          await operationRequest(
-            operands.reverse(),
-            this.currentOperator as OperationEnum,
-            localStorage.token || ''
-          )
+          await operationRequest(operands.reverse(), this.currentOperator as OperationEnum, token)
 
         this.displayValue = newDisplayValue
         this.userBalance = newUserBalance
